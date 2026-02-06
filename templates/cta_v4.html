@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 1080px;
+      height: 1350px;
+      font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      background: #E53935;
+    }
+    
+    .card {
+      width: 100%;
+      height: 100%;
+      background: #E53935;
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .pre-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 30px;
+    }
+    
+    .headline {
+      font-size: 80px;
+      font-weight: 900;
+      line-height: 1.05;
+      color: #fff;
+      letter-spacing: -3px;
+      margin-bottom: 40px;
+    }
+    
+    .divider {
+      width: 150px;
+      height: 6px;
+      background: #000;
+      margin-bottom: 40px;
+    }
+    
+    .description {
+      font-size: 28px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 60px;
+      max-width: 800px;
+    }
+    
+    .cta-button {
+      display: inline-block;
+      width: fit-content;
+      background: #000;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 25px 50px;
+      margin-bottom: 50px;
+    }
+    
+    .url {
+      font-size: 22px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .footer {
+      margin-top: auto;
+      padding-top: 40px;
+      border-top: 2px solid rgba(255,255,255,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .branding {
+      font-size: 24px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 3px;
+    }
+    
+    .tagline {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="pre-title">Subscribe</span>
+    <h1 class="headline">Get the full story delivered daily</h1>
+    <div class="divider"></div>
+    <p class="description">Deep analysis, expanded context, and everything that didn't fit in the cards — straight to your inbox.</p>
+    <div class="cta-button">Subscribe Now</div>
+    <span class="url">{{SUBSTACK_URL}}</span>
+    
+    <div class="footer">
+      <span class="branding">AI DIGEST</span>
+      <span class="tagline">The signal in the noise</span>
+    </div>
+  </div>
+</body>
+</html>

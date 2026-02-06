@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 1080px;
+      height: 1350px;
+      font-family: 'JetBrains Mono', monospace;
+      overflow: hidden;
+      background: #000;
+    }
+    
+    .card {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #0a0a0f 0%, #050508 50%, #0a0a0f 100%);
+      padding: 70px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Noise texture overlay */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+    }
+    
+    /* Cinematic light beam from top */
+    .light-beam {
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse at center, var(--glow-color) 0%, transparent 70%);
+      opacity: 0.08;
+      filter: blur(60px);
+    }
+    
+    /* Neon accent line - horizontal */
+    .neon-line {
+      position: absolute;
+      left: 70px;
+      right: 70px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent);
+      opacity: 0.6;
+    }
+    
+    .neon-line.top { top: 200px; }
+    .neon-line.bottom { bottom: 200px; }
+    
+    /* Vertical accent line */
+    .vertical-line {
+      position: absolute;
+      left: 70px;
+      top: 200px;
+      bottom: 200px;
+      width: 1px;
+      background: linear-gradient(180deg, var(--accent), transparent 30%, transparent 70%, var(--accent-secondary));
+      opacity: 0.3;
+    }
+    
+    /* Data grid background */
+    .data-grid {
+      position: absolute;
+      bottom: 250px;
+      right: 70px;
+      width: 300px;
+      height: 200px;
+      background-image: 
+        linear-gradient(var(--accent) 1px, transparent 1px),
+        linear-gradient(90deg, var(--accent) 1px, transparent 1px);
+      background-size: 30px 30px;
+      opacity: 0.05;
+      transform: perspective(500px) rotateX(60deg);
+      transform-origin: bottom;
+    }
+    
+    /* Floating data points */
+    .data-point {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent);
+    }
+    
+    .data-point:nth-child(1) { top: 30%; right: 15%; opacity: 0.8; }
+    .data-point:nth-child(2) { top: 45%; right: 25%; opacity: 0.5; }
+    .data-point:nth-child(3) { top: 55%; right: 10%; opacity: 0.6; }
+    .data-point:nth-child(4) { top: 70%; right: 20%; opacity: 0.4; }
+    
+    /* Card number - huge, ghosted */
+    .card-number {
+      position: absolute;
+      top: 40px;
+      right: 60px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 200px;
+      font-weight: 700;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.08);
+      line-height: 0.8;
+    }
+    
+    /* Category */
+    .category {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .category-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 0 30px var(--accent);
+    }
+    
+    .category-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+      opacity: 0.3;
+    }
+    
+    /* Title - elegant serif */
+    .title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 58px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-top: 20px;
+      max-height: 290px;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+    
+    /* Accent underline for title */
+    .title-accent {
+      width: 80px;
+      height: 3px;
+      background: var(--accent);
+      margin-top: 35px;
+      box-shadow: 0 0 15px var(--accent);
+    }
+    
+    /* Description - monospace, muted */
+    .description {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.8;
+      margin-top: 40px;
+      max-height: 200px;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+      letter-spacing: -0.3px;
+    }
+    
+    /* Spacer */
+    .spacer {
+      flex: 1;
+    }
+    
+    /* Footer */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .meta-label {
+      color: var(--accent);
+      opacity: 0.6;
+    }
+    
+    .branding {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.15);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
+    
+    /* Color themes - cyan and magenta based */
+    .theme-ai_news {
+      --accent: #00f0ff;
+      --accent-secondary: #ff00aa;
+      --glow-color: #00f0ff;
+    }
+    
+    .theme-ai_discourse {
+      --accent: #ff00aa;
+      --accent-secondary: #00f0ff;
+      --glow-color: #ff00aa;
+    }
+    
+    .theme-model_releases {
+      --accent: #bf5fff;
+      --accent-secondary: #00f0ff;
+      --glow-color: #bf5fff;
+    }
+    
+    .theme-ai_tools {
+      --accent: #00f0ff;
+      --accent-secondary: #00ff88;
+      --glow-color: #00f0ff;
+    }
+    
+    .theme-product_hunt {
+      --accent: #ff6b00;
+      --accent-secondary: #ff00aa;
+      --glow-color: #ff6b00;
+    }
+    
+    .theme-ai_papers {
+      --accent: #00ff88;
+      --accent-secondary: #00f0ff;
+      --glow-color: #00ff88;
+    }
+    
+    .theme-ai_funding {
+      --accent: #ffcc00;
+      --accent-secondary: #ff00aa;
+      --glow-color: #ffcc00;
+    }
+    
+    .theme-github_repos {
+      --accent: #ff00aa;
+      --accent-secondary: #00f0ff;
+      --glow-color: #ff00aa;
+    }
+  </style>
+</head>
+<body>
+  <div class="card theme-{{CATEGORY}}">
+    <!-- Atmospheric elements -->
+    <div class="light-beam"></div>
+    <div class="neon-line top"></div>
+    <div class="vertical-line"></div>
+    <div class="data-grid"></div>
+    <div class="data-point"></div>
+    <div class="data-point"></div>
+    <div class="data-point"></div>
+    <div class="data-point"></div>
+    
+    <div class="card-number">{{NUMBER}}</div>
+    
+    <!-- Content -->
+    <div class="category">
+      <span class="category-text">{{CATEGORY_NAME}}</span>
+      <div class="category-line"></div>
+    </div>
+    
+    <h1 class="title">{{TITLE}}</h1>
+    <div class="title-accent"></div>
+    
+    <p class="description">{{DESCRIPTION}}</p>
+    
+    <div class="spacer"></div>
+    
+    <div class="footer">
+      <div class="meta">
+        <div class="meta-item">
+          <span class="meta-label">SRC</span>
+          <span>{{DOMAIN}}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">DATE</span>
+          <span>{{DATE}}</span>
+        </div>
+      </div>
+      <div class="branding">AI Digest</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -25,7 +25,52 @@ ssl_context.check_hostname = False
 ssl_context.verify_mode = ssl.CERT_NONE
 
 OUTPUT_DIR = Path(__file__).parent.parent / "output"
+HISTORY_FILE = Path(__file__).parent.parent / "history.json"
 TODAY = datetime.now().strftime("%Y-%m-%d")
+HISTORY_DAYS = 7  # Don't repeat items from the last 7 days
+
+def load_history():
+    """Load history of previously selected items."""
+    if HISTORY_FILE.exists():
+        try:
+            with open(HISTORY_FILE) as f:
+                return json.load(f)
+        except:
+            pass
+    return {"selections": {}}
+
+def save_history(history):
+    """Save history to file."""
+    with open(HISTORY_FILE, 'w') as f:
+        json.dump(history, f, indent=2)
+
+def get_used_titles(history, days=HISTORY_DAYS):
+    """Get set of titles used in the last N days."""
+    used = set()
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    for date, items in history.get("selections", {}).items():
+        if date >= cutoff:
+            for cat, item in items.items():
+                if isinstance(item, dict):
+                    used.add(item.get('title', '').lower().strip())
+                    # Also add URL to catch same story from different sources
+                    url = item.get('url', '').lower().strip()
+                    if url:
+                        used.add(url)
+    return used
+
+def add_to_history(history, date, selected):
+    """Add today's selections to history."""
+    history["selections"][date] = {
+        cat: {"title": item.get("title", ""), "url": item.get("url", "")}
+        for cat, item in selected.items()
+    }
+    # Prune old entries (keep last 30 days)
+    cutoff = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+    history["selections"] = {
+        d: items for d, items in history["selections"].items() if d >= cutoff
+    }
+    return history
 
 def fetch_url(url, headers=None):
     """Fetch URL with optional headers."""
@@ -631,6 +676,11 @@ def main():
         }
     }
     
+    # Load history to avoid repeating recent items
+    history = load_history()
+    historically_used = get_used_titles(history)
+    print(f"\n📜 Loaded {len(historically_used)} items from history (last {HISTORY_DAYS} days)")
+    
     # Select top item per category (dedup by title/URL only, allow topic overlap in News/Discourse)
     results['selected'] = {}
     used_titles = set()
@@ -659,7 +709,11 @@ def main():
                 title_key = item['title'].lower().strip()
                 url_key = item.get('url', '').lower().strip()
                 
-                # Always skip exact title/URL duplicates
+                # Skip if shown in recent history
+                if title_key in historically_used or url_key in historically_used:
+                    continue
+                
+                # Always skip exact title/URL duplicates within today
                 if title_key in used_titles or url_key in used_urls:
                     continue
                 
@@ -678,13 +732,19 @@ def main():
                 break
             else:
                 if items:
+                    # Fallback to first item even if it was used before
                     results['selected'][cat] = items[0]
-                    print(f"\n⚠ {cat}: {items[0]['title'][:60]}... (fallback)")
+                    print(f"\n⚠ {cat}: {items[0]['title'][:60]}... (fallback, may repeat)")
         else:
             print(f"\n✗ {cat}: No items found")
     
     # Enrich descriptions with AI
     results['selected'] = enrich_all_descriptions(results['selected'])
+    
+    # Save to history for future deduplication
+    history = add_to_history(history, TODAY, results['selected'])
+    save_history(history)
+    print(f"\n📝 Saved today's selections to history")
     
     # Save results
     output_dir = OUTPUT_DIR / TODAY
